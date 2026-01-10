@@ -27,6 +27,42 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.post("/scrape-metadata", response_model=TikTokData, status_code=status.HTTP_200_OK)
+async def scrape_metadata(request: CheckRequest) -> TikTokData:
+    """
+    Step 1: Scrape only the metadata (author, title, transcript, etc.) from a TikTok URL.
+    """
+    try:
+        logger.info(f"Scraping metadata for URL: {request.url}")
+        tiktok_data: TikTokData = await fetch_tiktok_data(request.url)
+        return tiktok_data
+    except InvalidTikTokURLError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except (SupadataAuthError, SupadataAPIError, SupadataCreditsExhausted) as e:
+        status_code = getattr(e, 'status_code', 500)
+        raise HTTPException(status_code=status_code, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error scraping metadata: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.post("/fact-check", response_model=FactCheckResult, status_code=status.HTTP_200_OK)
+async def fact_check(tiktok_data: TikTokData) -> FactCheckResult:
+    """
+    Step 2: Perform fact-check on pre-scraped TikTok data.
+    """
+    try:
+        logger.info(f"Starting fact-check analysis for: {tiktok_data.video_id}")
+        fact_check_result: FactCheckResult = await fact_checker.analyze_credibility(tiktok_data)
+        return fact_check_result
+    except (GeminiAuthError, GeminiQuotaExceededError, GeminiRateLimitError, GeminiAPIError) as e:
+        status_code = 503 if isinstance(e, GeminiAPIError) else 429 if isinstance(e, GeminiRateLimitError) else 500
+        raise HTTPException(status_code=status_code, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in fact-check: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 @router.post("/check", response_model=FactCheckResult, status_code=status.HTTP_200_OK)
 async def check_video(request: CheckRequest) -> FactCheckResult:
     """
@@ -34,10 +70,8 @@ async def check_video(request: CheckRequest) -> FactCheckResult:
     
     This endpoint:
     1. Fetches video metadata and transcript from Supadata
-    2. (Future) Analyzes the content using LLM
+    2. Analyzes the content using Gemini LLM
     3. Returns a credibility score and assessment
-    
-    Currently implements Step 1 (data fetching) only.
     """
     start_time = time.time()
     
