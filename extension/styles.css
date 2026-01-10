@@ -1,3 +1,4 @@
+
 /* Global Font & Reset */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -44,32 +45,23 @@
   }
 }
 
-/* Fact Check Button */
+/* Fact Check Button - In sidebar with action buttons */
 .fact-check-btn {
-  position: fixed;
-  left: 24px;
-  top: 90px;
-  width: 52px;
-  height: 52px;
+  position: relative;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(20, 40, 20, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(190, 242, 100, 0.2);
+  background: transparent;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   z-index: 9999;
   animation: pulse-glow 3s infinite;
-}
-
-.fact-check-btn:hover {
-  transform: scale(1.1) rotate(5deg);
-  background: rgba(190, 242, 100, 0.1);
-  border-color: rgba(190, 242, 100, 0.5);
 }
 
 .fact-check-btn svg {
@@ -77,6 +69,26 @@
   height: 26px;
   fill: #bef264;
   filter: drop-shadow(0 0 5px rgba(190, 242, 100, 0.5));
+
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.fact-check-btn:hover {
+  transform: scale(1.1);
+}
+
+.fact-check-btn:active {
+  transform: scale(0.95);
+}
+
+.fact-check-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* Fact Check Panel */

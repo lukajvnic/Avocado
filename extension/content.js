@@ -24,6 +24,9 @@
     </svg>`
   };
 
+  // Track processed videos to avoid duplicates
+  const processedVideos = new Set();
+
   // Panel reference
   let panel = null;
   let overlay = null;
@@ -173,25 +176,113 @@
     `;
   }
 
-  // Create the fixed fact-check button
-  function createFixedButton() {
+  // Get the URL of the next upcoming video
+  function getNextVideoUrl() {
+    // Find all video containers
+    const containers = document.querySelectorAll('[data-scroll-index]');
+    if (!containers.length) return null;
+
+    // Find the currently visible container (closest to top of viewport)
+    let currentIndex = null;
+    for (const container of containers) {
+      const rect = container.getBoundingClientRect();
+      // Container is "current" if it's mostly visible in the viewport
+      if (rect.top >= -rect.height / 2 && rect.top <= window.innerHeight / 2) {
+        currentIndex = parseInt(container.getAttribute('data-scroll-index'), 10);
+        break;
+      }
+    }
+
+    if (currentIndex === null) return null;
+
+    // Find the next container
+    const nextContainer = document.querySelector(`[data-scroll-index="${currentIndex + 1}"]`);
+    if (!nextContainer) return null;
+
+    const videoWrapper = nextContainer.querySelector('[id^="xgwrapper-"]');
+    const videoId = videoWrapper ? videoWrapper.id.split('-').pop() : null;
+
+    const authorLink = nextContainer.querySelector('a[href^="/@"]');
+    const author = authorLink ? authorLink.href.split('/@').pop() : null;
+
+    return author && videoId
+      ? `https://www.tiktok.com/@${author}/video/${videoId}`
+      : null;
+  }
+
+  // Create fact-check button
+  function createFactCheckButton() {
     const button = document.createElement('button');
     button.className = 'fact-check-btn';
-    button.innerHTML = ICONS.search;
+
+    // Use the avocado logo image
+    const logo = document.createElement('img');
+    logo.src = chrome.runtime.getURL('logo.png');
+    logo.alt = 'Fact Check';
+    logo.className = 'fact-check-logo';
+    button.appendChild(logo);
+
     button.title = 'Fact Check This Video';
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
+
+      // Log the next video URL
+      const nextVideoUrl = getNextVideoUrl().split("?lang=en").join("");
+      console.log('[TikTok Fact Checker] Next video URL:', nextVideoUrl);
+
       openPanel();
     });
-    document.body.appendChild(button);
-    console.log('[TikTok Fact Checker] Button added to page');
+    return button;
+  }
+
+  // Find and process TikTok video containers
+  function processVideos() {
+    // Find all action button sidebars (the column with like, comment, share, etc.)
+    const sidebars = document.querySelectorAll('section[class*="SectionActionBarContainer"]');
+
+    sidebars.forEach(sidebar => {
+      // Check if button already exists in this sidebar
+      if (sidebar.querySelector('.fact-check-btn')) return;
+
+      // Create unique identifier
+      const videoId = Math.random().toString(36).substr(2, 9);
+      if (processedVideos.has(videoId)) return;
+
+      // Create and prepend button (so it appears at the top, above profile pic)
+      const button = createFactCheckButton();
+      sidebar.prepend(button);
+
+      processedVideos.add(videoId);
+      console.log('[TikTok Fact Checker] Button added to sidebar');
+    });
   }
 
   // Initialize the extension
   function init() {
     console.log('[TikTok Fact Checker] Extension loaded');
-    createFixedButton();
+
+    // Process existing videos
+    processVideos();
+
+    // Watch for new videos being loaded (infinite scroll)
+    const observer = new MutationObserver((mutations) => {
+      let shouldProcess = false;
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length > 0) {
+          shouldProcess = true;
+          break;
+        }
+      }
+      if (shouldProcess) {
+        processVideos();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
   }
 
   // Wait for page to be ready
