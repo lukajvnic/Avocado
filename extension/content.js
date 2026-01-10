@@ -38,15 +38,6 @@
     panel = document.createElement('div');
     panel.className = 'fact-check-panel';
     panel.innerHTML = `
-      <div class="panel-header">
-        <h2>
-          ${ICONS.factCheck}
-          Fact Check Results
-        </h2>
-        <button class="close-btn" aria-label="Close panel">
-          ${ICONS.close}
-        </button>
-      </div>
       <div class="panel-content">
         <div class="loading-state">
           <div class="spinner"></div>
@@ -54,9 +45,6 @@
         </div>
       </div>
     `;
-
-    // Add close button listener
-    panel.querySelector('.close-btn').addEventListener('click', closePanel);
 
     document.body.appendChild(panel);
   }
