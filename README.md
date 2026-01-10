@@ -104,7 +104,3 @@ A **Manifest V3** Chrome extension that provides the user interface.
     pytest tests/
     ```
 -   **Linting**: use `black` and `flake8` to maintain code quality.
-
-## 📄 License
-
-MIT License. See [LICENSE](LICENSE) for details.
