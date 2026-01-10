@@ -14,20 +14,37 @@ class CredibilityLevel(str, Enum):
     UNKNOWN = "unknown"
 
 
+class ReliableSource(BaseModel):
+    """Schema for a reliable news source link."""
+    
+    title: str = Field(..., description="Article or page title")
+    url: str = Field(..., description="Full URL to the source")
+    source: str = Field(..., description="Publication or organization name")
+
+
+class ClaimCheck(BaseModel):
+    """Schema for an individual claim analysis."""
+    
+    claim: str = Field(..., description="The specific claim identified from the video")
+    is_factual: Optional[bool] = Field(None, description="Whether the claim is factually correct")
+    verification: str = Field(..., description="Explanation of why the claim is true, false, or misleading")
+    importance: float = Field(..., ge=0.0, le=1.0, description="How important this claim is to the video's message (0-1)")
+    sources: list[ReliableSource] = Field(default_factory=list, description="Specific sources verifying this claim")
+
+
 class FactCheckResult(BaseModel):
     """Schema for the final fact check result."""
     
-    video_url: str = Field(..., description="The TikTok video URL")
+    video_url: Optional[str] = Field(None, description="The TikTok video URL")
     credibility_score: float = Field(..., ge=0.0, le=1.0, description="Score from 0-1")
     credibility_level: CredibilityLevel = Field(..., description="Categorical credibility")
     
     # Analysis details
     summary: Optional[str] = Field(None, description="Brief summary of findings")
-    concerns: list[str] = Field(default_factory=list, description="List of credibility concerns")
-    strengths: list[str] = Field(default_factory=list, description="Positive credibility indicators")
+    claims: list[ClaimCheck] = Field(default_factory=list, description="Detailed breakdown of individual claims")
     
     # Source data
-    has_transcript: bool = Field(..., description="Whether video had native captions")
+    has_transcript: Optional[bool] = Field(None, description="Whether video had native captions")
     analyzed_text: Optional[str] = Field(None, description="Text that was analyzed")
     
     # Metadata

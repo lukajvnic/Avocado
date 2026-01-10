@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     SUPADATA_METADATA_ENDPOINT: str = "/metadata"
     SUPADATA_TRANSCRIPT_ENDPOINT: str = "/transcript"
     
+    # Google Gemini API Configuration
+    GEMINI_API_KEY: str
+    GEMINI_MODEL: str = "gemini-3-flash-preview"  # Latest Gemini 2.0 Flash
+    GEMINI_TEMPERATURE: float = 0.3  # Lower temperature for more factual responses
+    GEMINI_MAX_OUTPUT_TOKENS: int = 2048
+    GEMINI_USE_SEARCH: bool = True  # Enable Google Search grounding
+    
     # Request Configuration
     REQUEST_TIMEOUT: int = 30
     MAX_RETRIES: int = 3

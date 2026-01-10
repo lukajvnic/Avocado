@@ -37,3 +37,33 @@ class InvalidTikTokURLError(Exception):
 class TranscriptNotAvailableError(Exception):
     """Raised when no transcript is available for a video (not an error, expected behavior)."""
     pass
+
+
+class GeminiAPIError(Exception):
+    """Raised when Gemini API returns an error."""
+    
+    def __init__(self, message: str, original_error: Exception = None):
+        self.message = message
+        self.original_error = original_error
+        super().__init__(self.message)
+
+
+class GeminiAuthError(GeminiAPIError):
+    """Raised when Gemini API key is invalid or unauthorized."""
+    
+    def __init__(self, message: str = "Invalid or missing Gemini API key", original_error: Exception = None):
+        super().__init__(message, original_error)
+
+
+class GeminiRateLimitError(GeminiAPIError):
+    """Raised when Gemini API rate limit is exceeded."""
+    
+    def __init__(self, message: str = "Gemini API rate limit exceeded", original_error: Exception = None):
+        super().__init__(message, original_error)
+
+
+class GeminiQuotaExceededError(GeminiAPIError):
+    """Raised when Gemini API quota is exceeded."""
+    
+    def __init__(self, message: str = "Gemini API quota exceeded", original_error: Exception = None):
+        super().__init__(message, original_error)
