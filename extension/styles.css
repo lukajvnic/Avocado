@@ -93,6 +93,7 @@
   min-height: 48px;
   object-fit: cover;
   border-radius: 50%;
+  transform: scale(1.5);
 }
 
 /* Label placeholder: matches TikTok's 16px text height */
