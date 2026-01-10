@@ -1,28 +1,17 @@
 # Avocado TikTok Fact Checker - Backend
 
-<<<<<<< HEAD
 FastAPI backend service for analyzing TikTok video credibility using Supadata API and Google Gemini via OpenRouter.
-=======
-FastAPI backend service for analyzing TikTok video credibility using the Supadata API.
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 
 ## Features
 
 - ✅ **Async TikTok Data Scraping**: Parallel fetching of metadata and transcripts
 - ✅ **Supadata API Integration**: Native support for TikTok video analysis
-<<<<<<< HEAD
 - ✅ **Gemini AI via OpenRouter**: AI-powered credibility analysis with flexible model selection
 - ✅ **URL Handling**: Automatic resolution of shortened TikTok URLs
 - ✅ **Error Handling**: Comprehensive error handling with custom exceptions
 - ✅ **Pydantic Validation**: Type-safe data models for all requests/responses
 - ✅ **Caching & Retry Logic**: Built-in caching and exponential backoff for API calls
 - ✅ **Multi-Model Support**: Easy switching between AI models via OpenRouter
-=======
-- ✅ **URL Handling**: Automatic resolution of shortened TikTok URLs
-- ✅ **Error Handling**: Comprehensive error handling with custom exceptions
-- ✅ **Pydantic Validation**: Type-safe data models for all requests/responses
-- 🚧 **Fact Checking**: LLM-based credibility analysis (planned)
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 
 ## Project Structure
 
@@ -41,11 +30,7 @@ backend/
 │   ├── services/
 │   │   ├── scraper.py       # Supadata API integration ✅
 │   │   ├── exceptions.py    # Custom exceptions
-<<<<<<< HEAD
 │   │   └── fact_checker.py  # Gemini AI fact-checking ✅
-=======
-│   │   └── fact_checker.py  # (Future) LLM fact-checking
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 │   ├── utils/
 │   │   └── url_utils.py     # URL cleaning & validation
 │   └── main.py              # FastAPI application
@@ -73,7 +58,6 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment
 
-<<<<<<< HEAD
 Create a `.env` file in the `backend` directory:
 
 ```env
@@ -101,20 +85,6 @@ python test_api_setup.py
 
 This will verify that both Supadata and Gemini API keys are configured correctly.
 
-=======
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your Supadata API key:
-
-```env
-SUPADATA_API_KEY=your_actual_api_key_here
-```
-
-## Running the Server
-
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 ### Development Mode
 
 ```bash
@@ -150,7 +120,6 @@ Check the credibility of a TikTok video.
 ```json
 {
   "video_url": "https://www.tiktok.com/@username/video/1234567890",
-<<<<<<< HEAD
   "credibility_score": 0.75,
   "credibility_level": "medium",
   "summary": "The video makes verifiable claims about health benefits but lacks cited sources. Some sensational language is used to attract attention.",
@@ -176,19 +145,6 @@ Check the credibility of a TikTok video.
 - `low` (0.0-0.49): Significant misinformation or misleading claims
 - `unknown`: Cannot assess due to insufficient content
 
-=======
-  "credibility_score": 0.5,
-  "credibility_level": "unknown",
-  "summary": "Data successfully fetched...",
-  "concerns": ["No native transcript available"],
-  "strengths": ["Audio URL available for transcription"],
-  "has_transcript": false,
-  "analyzed_text": null,
-  "processing_time_ms": 1234
-}
-```
-
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 ### GET /api/v1/health
 
 Health check endpoint.
@@ -210,7 +166,6 @@ The scraper service implements the core TikTok data fetching logic:
 1. **URL Validation**: Cleans and validates TikTok URLs
 2. **Short URL Resolution**: Follows redirects for `vm.tiktok.com` links
 3. **Parallel Fetching**: Uses `asyncio.gather()` to fetch metadata and transcript simultaneously
-<<<<<<< HEAD
 4. **Caching**: TTL-based caching (1 hour default) to reduce API calls
 5. **Retry Logic**: Exponential backoff for rate limit errors
 6. **Error Handling**: Distinguishes between different API errors (401, 402, 404, 429, etc.)
@@ -231,15 +186,10 @@ The fact checker uses Google's Gemini via OpenRouter to analyze video credibilit
 - Red flags (sensationalism, conspiracy theories)
 - Context and balanced presentation
 - Engagement patterns
-=======
-4. **Error Handling**: Distinguishes between different API errors (401, 402, 404, etc.)
-5. **Fallback Support**: Returns audio URL even when transcript is unavailable
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 
 ### Error Handling
 
 Custom exceptions for different failure scenarios:
-<<<<<<< HEAD
 
 **Supadata API:**
 - `InvalidTikTokURLError`: Malformed URLs
@@ -252,12 +202,6 @@ Custom exceptions for different failure scenarios:
 - `GeminiQuotaExceededError`: Quota exhausted
 - `GeminiRateLimitError`: Rate limit exceeded
 - `GeminiAPIError`: General API failures
-=======
-- `InvalidTikTokURLError`: Malformed URLs
-- `SupadataAuthError`: Invalid API key (401)
-- `SupadataCreditsExhausted`: Out of API credits (402)
-- `SupadataAPIError`: General API failures
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 
 ### Configuration
 
@@ -284,7 +228,6 @@ pytest tests/
 - [x] Short link resolution implemented
 - [x] Pydantic schema integration
 - [x] Comprehensive error handling
-<<<<<<< HEAD
 - [x] Caching with TTL (1 hour)
 - [x] Retry logic with exponential backoff
 - [x] Gemini AI integration for fact-checking
@@ -301,26 +244,12 @@ pytest tests/
 4. **Monitoring**: Add logging and metrics collection (Sentry, DataDog, etc.)
 5. **Optimization**: Fine-tune Gemini prompts for better accuracy
 6. **Caching**: Consider Redis for distributed caching in production
-=======
-- [ ] LLM-based fact checking (future)
-- [ ] Unit tests for scraper service
-- [ ] Integration tests for API endpoints
-
-## Next Steps
-
-1. **Implement Fact Checker**: Add LLM integration for credibility analysis
-2. **Testing**: Write comprehensive test suite
-4. **Rate Limiting**: Implement request rate limiting
-5. **Authentication**: Add API key authentication for clients
-6. **Monitoring**: Add logging and metrics collection
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 
 ## Environment Variables
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `SUPADATA_API_KEY` | Your Supadata API key | Yes | - |
-<<<<<<< HEAD
 | `OPENROUTER_API_KEY` | Your OpenRouter API key | Yes | - |
 | `OPENROUTER_MODEL` | Model to use (e.g., `google/gemini-flash-1.5`) | No | `google/gemini-flash-1.5` |
 | `OPENROUTER_TEMPERATURE` | AI response temperature (0.0-1.0) | No | `0.3` |
@@ -334,11 +263,6 @@ pytest tests/
 | `RETRY_BACKOFF` | Exponential backoff multiplier | No | `2.0` |
 | `CACHE_TTL` | Cache time-to-live (seconds) | No | `3600` |
 | `CACHE_MAX_SIZE` | Max cached items | No | `1000` |
-=======
-| `DEBUG` | Enable debug mode | No | `False` |
-| `REQUEST_TIMEOUT` | API request timeout (seconds) | No | `30` |
-| `MAX_RETRIES` | Max retry attempts | No | `3` |
->>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
 | `CORS_ORIGINS` | Allowed CORS origins | No | `["*"]` |
 
 ## License
