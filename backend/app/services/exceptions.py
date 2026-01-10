@@ -37,6 +37,7 @@ class InvalidTikTokURLError(Exception):
 class TranscriptNotAvailableError(Exception):
     """Raised when no transcript is available for a video (not an error, expected behavior)."""
     pass
+<<<<<<< HEAD
 
 
 class GeminiAPIError(Exception):
@@ -67,3 +68,5 @@ class GeminiQuotaExceededError(GeminiAPIError):
     
     def __init__(self, message: str = "Gemini API quota exceeded", original_error: Exception = None):
         super().__init__(message, original_error)
+=======
+>>>>>>> e3a170794cde3694b6b37418dc29f8e715387011

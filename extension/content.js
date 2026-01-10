@@ -234,8 +234,12 @@
       e.preventDefault();
 
       // Log the next video URL
+<<<<<<< HEAD
       const rawUrl = getNextVideoUrl();
       const nextVideoUrl = rawUrl ? rawUrl.split("?lang=en").join("") : null;
+=======
+      const nextVideoUrl = getNextVideoUrl().split("?lang=en").join("");
+>>>>>>> e3a170794cde3694b6b37418dc29f8e715387011
       console.log('[TikTok Fact Checker] Next video URL:', nextVideoUrl);
 
       openPanel();
