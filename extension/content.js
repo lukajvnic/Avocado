@@ -212,6 +212,10 @@
 
   // Create fact-check button
   function createFactCheckButton() {
+    // Create wrapper to match TikTok's grid structure (button + text label)
+    const wrapper = document.createElement('div');
+    wrapper.className = 'fact-check-wrapper';
+
     const button = document.createElement('button');
     button.className = 'fact-check-btn';
 
@@ -233,7 +237,16 @@
 
       openPanel();
     });
-    return button;
+
+    // Empty text placeholder to match TikTok's layout (uses strong tag)
+    const textPlaceholder = document.createElement('strong');
+    textPlaceholder.className = 'fact-check-label';
+    textPlaceholder.textContent = ''; // Empty like TikTok's structure
+
+    wrapper.appendChild(button);
+    wrapper.appendChild(textPlaceholder);
+
+    return wrapper;
   }
 
   // Find and process TikTok video containers
