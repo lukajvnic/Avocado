@@ -459,7 +459,7 @@
   // Cache for fact-check results (URL -> result)
   const factCheckCache = new Map();
 
-  // Call the backend /check endpoint to fact-check a TikTok video
+  // Call the backend via the background script (proxy)
   async function factCheckVideo(tiktokUrl) {
     // Check cache first
     if (factCheckCache.has(tiktokUrl)) {
@@ -467,31 +467,27 @@
       return factCheckCache.get(tiktokUrl);
     }
 
-    try {
-      console.log('[TikTok Fact Checker] Calling /check API with URL:', tiktokUrl);
+    console.log('[TikTok Fact Checker] Sending message to background script for URL:', tiktokUrl);
 
-      const response = await fetch(`${API_BASE_URL}/check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: tiktokUrl }),
+    try {
+      // Send message to background script
+      const response = await chrome.runtime.sendMessage({
+        type: 'CHECK_VIDEO',
+        url: tiktokUrl
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      if (!response || !response.success) {
+        throw new Error(response?.error || 'Unknown error from background script');
       }
 
-      const result = await response.json();
-      console.log('[TikTok Fact Checker] Fact-check result:', result);
+      console.log('[TikTok Fact Checker] Fact-check result:', response.data);
 
       // Store in cache
-      factCheckCache.set(tiktokUrl, result);
+      factCheckCache.set(tiktokUrl, response.data);
 
-      return result;
+      return response.data;
     } catch (error) {
-      console.error('[TikTok Fact Checker] API error:', error);
+      console.error('[TikTok Fact Checker] Messaging error:', error);
       throw error;
     }
   }
