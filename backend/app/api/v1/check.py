@@ -1,10 +1,14 @@
 """
 Main check endpoint for TikTok video fact checking.
 """
+import asyncio
 from fastapi import APIRouter, HTTPException, status
 from typing import Dict
 import time
 import logging
+
+# Overall timeout for the entire check operation (seconds)
+CHECK_TIMEOUT_SECONDS = 30
 
 from app.schemas.result import CheckRequest, FactCheckResult, CredibilityLevel
 from app.schemas.tiktok import TikTokData
@@ -75,7 +79,8 @@ async def check_video(request: CheckRequest) -> FactCheckResult:
     """
     start_time = time.time()
     
-    try:
+    async def _perform_check():
+        """Inner function to perform the actual check (for timeout wrapping)."""
         # Step 1: Fetch TikTok data (metadata + transcript)
         logger.info(f"Processing check request for URL: {request.url}")
         tiktok_data: TikTokData = await fetch_tiktok_data(request.url)
@@ -85,6 +90,24 @@ async def check_video(request: CheckRequest) -> FactCheckResult:
         fact_check_result: FactCheckResult = await fact_checker.analyze_credibility(tiktok_data)
         
         return fact_check_result
+    
+    try:
+        # Wrap the entire operation in a timeout
+        result = await asyncio.wait_for(_perform_check(), timeout=CHECK_TIMEOUT_SECONDS)
+        return result
+    
+    except asyncio.TimeoutError:
+        logger.warning(f"Check request timed out after {CHECK_TIMEOUT_SECONDS}s for URL: {request.url}")
+        # Return a timeout result (treated same as non-news content on frontend)
+        return FactCheckResult(
+            credibility_score=-1.0,
+            summary="Analysis timed out. Please try again later.",
+            claims=[],
+            video_url=request.url,
+            has_transcript=False,
+            analyzed_text=None,
+            processing_time_ms=int((time.time() - start_time) * 1000)
+        )
         
     except InvalidTikTokURLError as e:
         logger.warning(f"Invalid TikTok URL: {request.url}")

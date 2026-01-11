@@ -507,3 +507,51 @@
   text-align: center;
   padding: 20px;
 }
+
+/* Not Fact-Checkable (Non-News) Section */
+.not-news-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  height: calc(100% - 100px);
+  animation: fadeIn 0.6s ease;
+}
+
+.not-news-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.not-news-icon svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 15px rgba(190, 242, 100, 0.3));
+}
+
+.not-news-title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.not-news-text {
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+  max-width: 280px;
+}
+
+.not-news-subtext {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 280px;
+}

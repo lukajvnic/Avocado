@@ -119,6 +119,21 @@
   // Show results from API
   function showResults(result) {
     const content = panel.querySelector('.panel-content');
+
+    // Handle non-news content (credibility_score of -1)
+    if (result.credibility_score === -1) {
+      content.innerHTML = `
+        <p class="panel-title">Avocado</p>
+        <div class="not-news-section">
+          <div class="not-news-icon">${ICONS.avocado}</div>
+          <h3 class="not-news-title">Not Fact-Checkable</h3>
+          <p class="not-news-text">This video doesn't appear to contain news or factual claims that can be verified.</p>
+          <p class="not-news-subtext">Avocado works best with videos that make specific claims about events, statistics, or verifiable information.</p>
+        </div>
+      `;
+      return;
+    }
+
     const score = Math.round(result.credibility_score * 100);
     const label = getCredibilityLabel(result.credibility_score);
     const color = getScoreColor(result.credibility_score);
@@ -315,8 +330,8 @@
       e.stopPropagation();
       e.preventDefault();
 
-      // Get the current video URL
-      const currentUrl = getCurrentTabUrl();
+      // Get the current video URL (pass button as context for DOM scraping)
+      const currentUrl = getCurrentVideoUrl(button);
       console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
       // Check if already loading this URL
@@ -374,8 +389,8 @@
       e.stopPropagation();
       e.preventDefault();
 
-      // Print current video URL
-      const currentUrl = getCurrentTabUrl();
+      // Get the current video URL (pass button as context for DOM scraping)
+      const currentUrl = getCurrentVideoUrl(button);
       console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
       // Check if already loading this URL
@@ -483,8 +498,54 @@
     });
   }
 
-  function getCurrentTabUrl() {
-    return window.location.href;
+  // Get the current video URL - scrapes from DOM when on For You page
+  function getCurrentVideoUrl(contextElement) {
+    const currentUrl = window.location.href;
+
+    // If already on a specific video page URL, use it directly
+    if (currentUrl.includes('/video/')) {
+      return currentUrl.split('?')[0];
+    }
+
+    // For You page - need to scrape video info from the DOM
+    if (contextElement) {
+      // Navigate from the clicked button up to the video container
+      const container = contextElement.closest('[data-scroll-index]') ||
+        contextElement.closest('section[id^="media-card-"]') ||
+        contextElement.closest('div[class*="DivItemContainerV2"]') ||
+        contextElement.closest('div[class*="DivVideoContainer"]');
+
+      if (container) {
+        // 1. Extract Video ID from xgwrapper element
+        const videoWrapper = container.querySelector('[id^="xgwrapper-"]');
+        let videoId = videoWrapper ? videoWrapper.id.split('-').pop() : null;
+
+        // Fallback: try to find video ID from any video link
+        if (!videoId) {
+          const videoLink = container.querySelector('a[href*="/video/"]');
+          if (videoLink) {
+            const match = videoLink.href.match(/\/video\/(\d+)/);
+            if (match) videoId = match[1];
+          }
+        }
+
+        // 2. Extract Author from /@ link
+        const authorLink = container.querySelector('a[href^="/@"]');
+        const author = authorLink
+          ? authorLink.href.split('/@').pop().split('/')[0].split('?')[0]
+          : null;
+
+        if (author && videoId) {
+          const constructedUrl = `https://www.tiktok.com/@${author}/video/${videoId}`;
+          console.log('[TikTok Fact Checker] Constructed URL from DOM:', constructedUrl);
+          return constructedUrl;
+        }
+      }
+    }
+
+    // Final fallback: return current URL
+    console.log('[TikTok Fact Checker] Using fallback URL:', currentUrl);
+    return currentUrl;
   }
 
   const API_BASE_URL = "http://localhost:8000/api/v1"
