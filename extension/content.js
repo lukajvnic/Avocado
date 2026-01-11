@@ -31,6 +31,9 @@
   let panel = null;
   let overlay = null;
 
+  // Track pending API calls to prevent duplicates
+  const pendingRequests = new Set();
+
   // Create the slide-out panel
   function createPanel() {
     // Create overlay
@@ -316,15 +319,30 @@
       const currentUrl = getCurrentTabUrl();
       console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
+      // Check if already loading this URL
+      if (pendingRequests.has(currentUrl)) {
+        console.log('[TikTok Fact Checker] Already loading, opening panel');
+        openPanel();
+        return;
+      }
+
       // Open panel first to show loading state
       openPanel();
 
-      // Call the backend while loading screen is showing
-      const result = await factCheckVideo(currentUrl);
-      console.log('[TikTok Fact Checker] Result:', result);
+      // Mark as pending
+      pendingRequests.add(currentUrl);
 
-      // Update panel with results (using demo for now, will use real result later)
-      showResults(result);
+      try {
+        // Call the backend while loading screen is showing
+        const result = await factCheckVideo(currentUrl);
+        console.log('[TikTok Fact Checker] Result:', result);
+
+        // Update panel with results
+        showResults(result);
+      } finally {
+        // Remove from pending
+        pendingRequests.delete(currentUrl);
+      }
     });
 
     // Empty text placeholder to match TikTok's layout (uses strong tag)
@@ -360,15 +378,30 @@
       const currentUrl = getCurrentTabUrl();
       console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
+      // Check if already loading this URL
+      if (pendingRequests.has(currentUrl)) {
+        console.log('[TikTok Fact Checker] Already loading, opening panel');
+        openPanel();
+        return;
+      }
+
       // Open panel first to show loading state
       openPanel();
 
-      // Call the backend while loading screen is showing
-      const result = await factCheckVideo(currentUrl);
-      console.log('[TikTok Fact Checker] Result:', result);
+      // Mark as pending
+      pendingRequests.add(currentUrl);
 
-      // Update panel with results (using demo for now, will use real result later)
-      showResults(result);
+      try {
+        // Call the backend while loading screen is showing
+        const result = await factCheckVideo(currentUrl);
+        console.log('[TikTok Fact Checker] Result:', result);
+
+        // Update panel with results
+        showResults(result);
+      } finally {
+        // Remove from pending
+        pendingRequests.delete(currentUrl);
+      }
     });
 
     return button;
