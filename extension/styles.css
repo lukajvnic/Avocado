@@ -361,15 +361,16 @@
 
 .source-link-text {
   color: #fff;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: rgba(190, 242, 100, 0.5);
+  text-underline-offset: 3px;
   font-size: 14px;
-  transition: color 0.2s ease;
-  border-bottom: 1px solid rgba(190, 242, 100, 0.3);
+  transition: all 0.2s ease;
 }
 
 .source-link-text:hover {
   color: #82A903;
-  border-bottom-color: #82A903;
+  text-decoration-color: #82A903;
 }
 
 /* Loading State */
@@ -419,4 +420,90 @@
 .panel-overlay.visible {
   opacity: 1;
   visibility: visible;
+}
+
+/* Claims Section */
+.claims-section {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+}
+
+.claim-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  animation: fadeIn 0.5s ease backwards;
+  border-left: 4px solid #bef264;
+}
+
+.claim-card.factual-true {
+  border-left-color: rgb(130, 169, 3);
+}
+
+.claim-card.factual-false {
+  border-left-color: #eb4242;
+}
+
+.claim-card.factual-unknown {
+  border-left-color: #fbe434;
+}
+
+.claim-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.claim-status {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.claim-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.claim-verification {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.claim-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.claim-source-link {
+  color: #bef264;
+  text-decoration: none;
+  font-size: 12px;
+  padding: 4px 10px;
+  background: rgba(190, 242, 100, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.claim-source-link:hover {
+  background: rgba(190, 242, 100, 0.2);
+  color: #fff;
+}
+
+.no-claims {
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
 }

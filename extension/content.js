@@ -66,11 +66,6 @@
       panel.classList.add('open');
       overlay.classList.add('visible');
     }, 10);
-
-    // Simulate loading and show demo results (replace with real API call later)
-    setTimeout(() => {
-      showDemoResults();
-    }, 2000);
   }
 
   // Close the panel
@@ -93,22 +88,92 @@
     `;
   }
 
-  // Show demo results with SVG Speedometer
-  function showDemoResults() {
+  // Map credibility score to adjective
+  function getCredibilityLabel(score) {
+    if (score >= 0.8) return 'RELIABLE';
+    if (score >= 0.6) return 'LIKELY TRUE';
+    if (score >= 0.4) return 'MIXED';
+    if (score >= 0.2) return 'DOUBTFUL';
+    return 'UNRELIABLE';
+  }
+
+  // Get color based on score (avocado green tones)
+  function getScoreColor(score) {
+    if (score >= 0.8) return '#15803d'; // Dark avocado
+    if (score >= 0.6) return '#22c55e'; // Medium green
+    if (score >= 0.4) return '#4ade80'; // Light green
+    if (score >= 0.2) return '#86efac'; // Pale green
+    return '#bef264'; // Avocado light
+  }
+
+  // Get factual status emoji and text
+  function getFactualStatus(isFactual) {
+    if (isFactual === true) return { text: 'Verified', class: 'factual-true' };
+    if (isFactual === false) return { text: 'False', class: 'factual-false' };
+    return { text: 'Unverified', class: 'factual-unknown' };
+  }
+
+  // Show results from API
+  function showResults(result) {
     const content = panel.querySelector('.panel-content');
-    const score = 70; // Demo score
+    const score = Math.round(result.credibility_score * 100);
+    const label = getCredibilityLabel(result.credibility_score);
+    const color = getScoreColor(result.credibility_score);
 
-    // Determine color based on score
-    let color = '#ef4444'; // Red
-    if (score >= 80) color = '#22c55e'; // Green
-    else if (score >= 50) color = '#eab308'; // Yellow
-
-    // SVG Geometry
+    // SVG Geometry for speedometer
     const radius = 85;
     const strokeWidth = 16;
-    const center = 110; // ViewBox width / 2
+    const center = 110;
     const circumference = Math.PI * radius;
     const dashValue = (score / 100) * circumference;
+
+    // Collect all sources from all claims
+    let allSources = [];
+    if (result.claims && result.claims.length > 0) {
+      result.claims.forEach(claimData => {
+        if (claimData.sources && claimData.sources.length > 0) {
+          allSources.push(...claimData.sources);
+        }
+      });
+    }
+
+    // Remove duplicate sources by title+source
+    const uniqueSources = allSources.filter((source, index, self) =>
+      index === self.findIndex(s => s.title === source.title && s.source === source.source)
+    );
+
+    // Generate claims HTML (without sources)
+    let claimsHTML = '';
+    if (result.claims && result.claims.length > 0) {
+      claimsHTML = result.claims.map((claimData, index) => {
+        const status = getFactualStatus(claimData.is_factual);
+
+        return `
+          <div class="claim-card ${status.class}">
+            <div class="claim-header">
+              <span class="claim-status">${status.text}</span>
+            </div>
+            <p class="claim-text">${claimData.claim}</p>
+            <p class="claim-verification">${claimData.verification}</p>
+          </div>
+        `;
+      }).join('');
+    } else {
+      claimsHTML = '<p class="no-claims">No specific claims identified in this video.</p>';
+    }
+
+    // Generate sources HTML for bottom section
+    let sourcesHTML = '';
+    if (uniqueSources.length > 0) {
+      sourcesHTML = uniqueSources.map(src => `
+        <div class="source-line">
+          <span class="source-emoji">🔗</span>
+          <a href="${src.url}" target="_blank" class="source-link-text">${src.source}</a>
+        </div>
+      `).join('');
+    } else {
+      sourcesHTML = '<p class="no-claims">No sources available.</p>';
+    }
 
     content.innerHTML = `
       <p class="panel-title">Avocado</p>
@@ -117,9 +182,9 @@
           <svg class="speedometer-svg" viewBox="0 0 220 170">
             <defs>
               <linearGradient id="grad-spectrum" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#bef264;stop-opacity:1" /> <!-- Avocado Light -->
-                <stop offset="50%" style="stop-color:#4ade80;stop-opacity:1" /> <!-- Avocado Medium -->
-                <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" /> <!-- Avocado Dark -->
+                <stop offset="0%" style="stop-color:#bef264;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#4ade80;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" />
               </linearGradient>
             </defs>
 
@@ -139,40 +204,31 @@
                   stroke-dasharray="${dashValue}, ${circumference}"
                   class="meter-fill"/>
             
-            <!-- Labels (Below the arc) -->
-            <text x="${center}" y="80" text-anchor="middle" class="label-text" fill="#94a3b8">
-              Reliable
+            <!-- Labels -->
+            <text x="${center}" y="80" text-anchor="middle" class="label-text" fill="${color}">
+              ${label}
             </text>
-            <text x="${center}" y="130" text-anchor="middle" class="score-text" fill="#bef264">
+            <text x="${center}" y="130" text-anchor="middle" class="score-text" fill="${color}">
               ${score}%
             </text>
           </svg>
+        </div>
       </div>
 
       <div class="summary-section">
-        <h3 class="section-title">Claims Summary</h3>
-        <p class="summary-text">
-          This video makes claims about [topic]. The main assertions include 
-          [claim 1] and [claim 2]. Our analysis suggests that while some 
-          information is accurate, certain claims require additional verification.
-        </p>
+        <h3 class="section-title">Summary</h3>
+        <p class="summary-text">${result.summary || 'No summary available.'}</p>
+      </div>
+
+      <div class="claims-section">
+        <h3 class="section-title">Claims Analysis</h3>
+        ${claimsHTML}
       </div>
 
       <div class="sources-section">
         <h3 class="section-title">Verification Sources</h3>
         <div class="sources-text-box">
-          <div class="source-line">
-            <span class="source-emoji">🔗</span>
-            <a href="https://www.reuters.com/fact-check" target="_blank" class="source-link-text">Reuters Fact Check</a>
-          </div>
-          <div class="source-line">
-            <span class="source-emoji">🔗</span>
-            <a href="https://apnews.com/hub/ap-fact-check" target="_blank" class="source-link-text">Associated Press</a>
-          </div>
-          <div class="source-line">
-            <span class="source-emoji">🔗</span>
-            <a href="https://www.snopes.com" target="_blank" class="source-link-text">Snopes</a>
-          </div>
+          ${sourcesHTML}
         </div>
       </div>
     `;
@@ -252,16 +308,23 @@
     button.appendChild(logo);
 
     button.title = 'Fact Check This Video';
-    button.addEventListener('click', (e) => {
+    button.addEventListener('click', async (e) => {
       e.stopPropagation();
       e.preventDefault();
 
-      // Log the next video URL
-      const rawUrl = getNextVideoUrl();
-      const nextVideoUrl = rawUrl ? rawUrl.split("?lang=en").join("") : null;
-      console.log('[TikTok Fact Checker] Next video URL:', nextVideoUrl);
+      // Get the current video URL
+      const currentUrl = getCurrentTabUrl();
+      console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
+      // Open panel first to show loading state
       openPanel();
+
+      // Call the backend while loading screen is showing
+      const result = await factCheckVideo(currentUrl);
+      console.log('[TikTok Fact Checker] Result:', result);
+
+      // Update panel with results (using demo for now, will use real result later)
+      showResults(result);
     });
 
     // Empty text placeholder to match TikTok's layout (uses strong tag)
@@ -289,15 +352,23 @@
     button.appendChild(logo);
 
     button.title = 'Fact Check This Video';
-    button.addEventListener('click', (e) => {
+    button.addEventListener('click', async (e) => {
       e.stopPropagation();
       e.preventDefault();
 
-      // Log the next video URL
-      const nextVideoUrl = getNextVideoUrlOverlay();
-      console.log('[TikTok Fact Checker] Next video URL (Overlay UI):', nextVideoUrl);
+      // Print current video URL
+      const currentUrl = getCurrentTabUrl();
+      console.log('[TikTok Fact Checker] Current URL:', currentUrl);
 
+      // Open panel first to show loading state
       openPanel();
+
+      // Call the backend while loading screen is showing
+      const result = await factCheckVideo(currentUrl);
+      console.log('[TikTok Fact Checker] Result:', result);
+
+      // Update panel with results (using demo for now, will use real result later)
+      showResults(result);
     });
 
     return button;
@@ -377,6 +448,52 @@
       childList: true,
       subtree: true
     });
+  }
+
+  function getCurrentTabUrl() {
+    return window.location.href;
+  }
+
+  const API_BASE_URL = "http://localhost:8000/api/v1"
+
+  // Cache for fact-check results (URL -> result)
+  const factCheckCache = new Map();
+
+  // Call the backend /check endpoint to fact-check a TikTok video
+  async function factCheckVideo(tiktokUrl) {
+    // Check cache first
+    if (factCheckCache.has(tiktokUrl)) {
+      console.log('[TikTok Fact Checker] Cache hit for URL:', tiktokUrl);
+      return factCheckCache.get(tiktokUrl);
+    }
+
+    try {
+      console.log('[TikTok Fact Checker] Calling /check API with URL:', tiktokUrl);
+
+      const response = await fetch(`${API_BASE_URL}/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: tiktokUrl }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[TikTok Fact Checker] Fact-check result:', result);
+
+      // Store in cache
+      factCheckCache.set(tiktokUrl, result);
+
+      return result;
+    } catch (error) {
+      console.error('[TikTok Fact Checker] API error:', error);
+      throw error;
+    }
   }
 
   // Wait for page to be ready
