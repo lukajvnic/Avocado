@@ -43,11 +43,6 @@ class FactChecker:
         prompt += """
 INSTRUCTIONS:
 Analyze the video content and transcript to verify the most critical information.
-0. IMPORTANT: If you don't think the transcript represents a video containing news, factual claims, or verifiable information (e.g., it's just entertainment, comedy, music, personal vlogs, or casual content), then skip all other steps and return:
-   - credibility_score: -1.0
-   - summary: "This video does not contain news or factual claims that can be verified."
-   - claims: [] (empty array)
-   Only proceed with fact-checking if there are actual factual claims to verify.
 1. TARGET KEY CLAIMS: Identify the top 3 most significant factual claims.
 2. DIRECT VERIFICATION: Perform a single, efficient Google Search to verify these claims.
 3. CONCISE REPORTING: For each claim, provide a 1-2 sentence verification.
